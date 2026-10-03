@@ -4,102 +4,109 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex"><meta name="color-scheme" content="dark">
 <title>Commit-One — Interactive Video Generation</title>
-<meta name="description" content="Fine-grained interaction does not have to mean fine-grained generation. Commit-One keeps large-chunk joint generation and makes the future replaceable.">
+<meta name="description" content="Commit-One decouples joint generation from output commitment, removing chunk duration as a hard constraint on interaction granularity.">
 <meta property="og:title" content="Commit-One — Interactive Video Generation">
-<meta property="og:description" content="An alternative route to interactive video generation: generate together, commit one.">
+<meta property="og:description" content="Large-chunk joint generation with fine-grained output commitment for interactive video.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121212'/%3E%3Crect x='5' y='9' width='6' height='14' rx='1' fill='%23f5ab4a'/%3E%3Cpath d='M15 9h12v14H15z' fill='none' stroke='%23f5ab4a' stroke-width='1.5' stroke-dasharray='3 2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 <script defer src="site-config.js"></script><script defer src="app.js"></script>
 </head>
 <body>
-<a class="skip" href="#why">Skip to content</a>
-<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">C<span>—</span>1</a><a href="#why">01 &nbsp; Why</a><a href="#idea">02 &nbsp; The idea</a><a href="#mechanism">03 &nbsp; How it works</a><a href="#evidence">04 &nbsp; Evidence</a><a href="#outlook">05 &nbsp; A different route</a></nav>
+<a class="skip" href="#constraint">Skip to content</a>
+<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">Commit–One</a><a href="#constraint">1. Chunk boundary</a><a href="#reframe">2. Revocable future</a><a href="#mechanism">3. Controller</a><a href="#evidence">4. Choosing K</a><a href="#outlook">5. Design choice</a></nav>
 <main id="top">
 <header class="hero">
-<div class="topbar"><span>INTERACTIVE VIDEO GENERATION</span></div>
-<p class="eyebrow">GENERATE TOGETHER. COMMIT ONE.</p>
-<h1>Commit<span class="dash">–</span>One<span class="period">.</span></h1>
-<p class="paper-title">Decoupling Generation and Commitment<br class="desktop-break"> for Interactive Video Generation</p>
+<div class="topbar"><span>RESEARCH PROJECT</span><span>INTERACTIVE VIDEO GENERATION</span></div>
+<h1>Commit–One</h1>
+<p class="paper-title">Decoupling Generation and Commitment for Interactive Video Generation</p>
+<div class="introduction">
+<p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
+<p>Smaller chunks, however, also reduce the amount of video modeled jointly and may limit parallel efficiency. Commit-One asks whether fine-grained interaction must require fine-grained generation.</p>
+</div>
 <section id="demo" class="hero-demo" aria-label="Interactive demo">
-<div class="figure-heading"><span>INTERACTIVE DEMO</span></div>
+<div class="figure-heading"><span>DEMONSTRATION / BIDIRECTIONAL MODEL</span></div>
 <video id="demo-video" controls playsinline preload="metadata" src="assets/demo.mp4" poster="assets/demo-poster.jpg" aria-label="Recorded interactive demo using a bidirectional model with five-second generation chunks"><a href="assets/demo.mp4">Watch the interactive demo</a></video>
 <p id="demo-description" class="caption">Bidirectional model · 5-second generation chunks.</p><p class="caption" id="demo-caption"></p>
 </section>
-<p class="hero-summary">Predict a large chunk. Commit only what is needed.<br>Keep the rest of the future open to change.</p>
-<div class="hero-foot"><span>Large-chunk generation · Fine-grained commitment</span><a href="#why">Explore the idea <span aria-hidden="true">↓</span></a></div>
+<p class="demo-note">The model in this demonstration generates five seconds of video jointly. Output is delivered incrementally, so the interaction granularity is not tied to the five-second generation chunk.</p>
 </header>
-<section id="why">
-<div class="section-label">01 / WHY</div><h2>Fast generation.<br>Still waiting to interact?</h2>
-<p>A new condition should change what the viewer sees promptly. Even a fast generator can leave it waiting for generation and playback boundaries.</p>
+<section id="constraint">
+<h2>1. Where the chunk-size constraint comes from</h2>
+<p>An interactive system generates video into a buffer while a player consumes previously generated output. Let <strong>K</strong> denote the number of temporal latents generated together. If each latent represents <strong>δ</strong> seconds of video, one generation chunk covers</p>
+<div class="equation" aria-label="T equals K delta"><i>T</i> = <i>Kδ</i>.</div>
+<p>Generation throughput alone does not determine how quickly the stream responds. A condition may first wait for generation to begin, then wait for the first affected output to become ready, and finally wait for that output to reach playback. We write these components as</p>
+<div class="equation" aria-label="L equals R plus C plus Q"><i>L</i> = <i>R</i> + <i>C</i> + <i>Q</i>.</div>
 <figure class="paper-video" aria-label="Generation and playback advancing on a shared clock">
-<div class="figure-heading"><span>PAPER FIG. 02 / Where response latency comes from</span><div class="figure-media-links"><a href="assets/figures/serving.svg" target="_blank" rel="noopener">Original ↗</a><a href="assets/figures/fig2-serving-latency.mp4" download>MP4 ↓</a></div></div>
 <video class="latency-video" muted loop playsinline controls preload="metadata" poster="assets/figures/serving-video-poster.png" aria-label="Time advances left to right: playback continues as generation runs; a new condition waits R, requires generation C, then waits Q until its output is displayed.">
 <source src="assets/figures/fig2-serving-latency.mp4" type="video/mp4">
 <a href="assets/figures/fig2-serving-latency.mp4">Watch the response latency animation.</a>
 </video>
-<figcaption><strong>R</strong> waits to generate; <strong>C</strong> includes DiT sampling and required VAE decoding; <strong>Q</strong> waits to display. A schematic schedule, not measured timing.</figcaption>
+<figcaption><strong>R</strong> is the wait before generation starts; <strong>C</strong> is the generation critical path to the first deliverable output group; <strong>Q</strong> is the remaining wait until that group is displayed.</figcaption>
 </figure>
-<div class="question"><span class="mono">THE QUESTION</span><p>Must fine-grained interaction require<br class="desktop-break"> fine-grained generation?</p></div>
-<p>Smaller chunks offer more frequent updates, but can limit joint temporal modeling and parallel efficiency.</p>
+<p>In a conventional system, each generation call appends the entire generated chunk to the playback queue: generate K latents, commit K latents. For an isolated condition arriving uniformly within this chunk period, and with generation time held fixed, the expected waiting before generation and playback satisfies</p>
+<div class="equation equation-result" aria-label="Expected R plus Q is greater than or equal to T over 2"><span class="math-operator">E</span>[<i>R</i> + <i>Q</i>] ≥ <i>T</i> / 2.</div>
+<p>This bound is an expectation under the stated model rather than a statement about every request. Its role is to make the coupling explicit: even if generation itself is fast, the duration of a chunk still appears in the response-time floor.</p>
+<p>Since <strong>T = Kr/f</strong>, the direct ways to reduce this term are to use fewer latents per chunk or to increase the temporal frame rate. Neither change is free. Smaller chunks reduce the range of joint temporal modeling and may offer less useful work for parallel execution. Increasing the frame rate solely to obtain finer interaction spends additional computation on frames that may not otherwise be needed. It also requires the data pipeline to reprocess and store videos at the new rate, since current video generation models generally assume a fixed training and generation frame rate rather than supporting variable frame rates directly.</p>
+<p>We therefore ask whether the system can remove the chunk-period waiting constraint without requiring the model to generate smaller chunks.</p>
 </section>
-<section id="idea">
-<div class="section-label">02 / WHAT</div><h2>Generate together.<br><span class="accent">Commit one.</span></h2>
-<p class="lead">A prediction does not have to be a promise.</p>
-<p>Jointly generate <strong>K latents</strong>, then deliver at <strong>q = 1</strong>. Protect the necessary prefix and keep future predictions replaceable.</p>
+<section id="reframe">
+<h2>2. Keep the future revocable</h2>
+<p>In a conventional system, one generation call produces <strong>K</strong> latents and commits the whole chunk to the playback queue. Once committed, none of those predictions can be changed.</p>
 <figure class="paper-video" aria-label="Animated generation and commitment comparison">
-<div class="figure-heading"><span>PAPER FIG. 01 / Generation and commitment</span><div class="figure-media-links"><a href="assets/figures/concept.svg" target="_blank" rel="noopener">Original ↗</a><a href="assets/figures/fig1-generation-commitment-v2.mp4" download>MP4 ↓</a></div></div>
 <video class="concept-video" muted loop playsinline controls preload="metadata" poster="assets/figures/concept-video-poster-v2.png" aria-label="Paper Figure 1 animation: start with empty blocks; demonstrate one-at-a-time versus joint sampling; start output from two positions; finish the current prediction; remove the last two gray predictions in Commit-One and generate a new green chunk.">
 <source src="assets/figures/fig1-generation-commitment-v2.mp4" type="video/mp4">
 <a href="assets/figures/fig1-generation-commitment-v2.mp4">Watch the generation and commitment animation.</a>
 </video>
-<figcaption>Commit-One keeps large-chunk generation and replaces only the unprotected future. Positions represent video content, not measured latency.</figcaption>
+<figcaption>Commit-One keeps the necessary prefix and leaves the rest of the predicted future revocable.</figcaption>
 </figure>
-<p class="definition"><strong>Commitment ≠ playback.</strong> Committed output can no longer be replaced, even if it has not yet been displayed.</p>
+<p>Commit-One still generates <strong>K</strong> latents together, but it does not commit all of them at once. It commits only the part that must be fixed and keeps the remaining predictions in the cache.</p>
+<p>When a new condition arrives, the committed prefix stays unchanged. The uncommitted future can be withdrawn and generated again under the new condition. The model can therefore generate a large chunk without fixing the entire predicted future.</p>
 </section>
 <section id="mechanism">
-<div class="section-label">03 / HOW IT WORKS</div><h2>A reusable future.<br>A two-state controller.</h2>
-<p><strong>Produce</strong> generates a chunk; <strong>Consume</strong> reuses predictions. New conditions trigger feasible suffix replanning; refill keeps the stream supplied.</p>
+<h2>3. Managing a revocable future</h2>
+<p>Keeping part of the predicted future uncommitted makes it revocable. The next question is when to reuse these predictions, when to replace them, and when to generate more.</p>
+<p>Commit-One manages these decisions with a two-state controller. In <strong>Consume</strong>, the system reuses predictions from the cache and commits them gradually. In <strong>Produce</strong>, the model runs a generation job either to refill the cache or to replace an uncommitted suffix.</p>
+<p>When a new condition arrives, playback continues from the committed prefix. The controller keeps the part that can no longer be changed and regenerates the remaining future from the earliest feasible point. If the condition does not change, it simply refills the cache before the available predictions run out.</p>
 <figure class="paper-video" aria-label="A condition switch shown through synchronized controller and output animation">
-<div class="figure-heading"><span>PAPER FIG. 03 / A case through the controller</span><div class="figure-media-links"><a href="assets/figures/controller.png" target="_blank" rel="noopener">Original ↗</a><a href="assets/figures/fig3-controller-case.mp4" download>MP4 ↓</a></div></div>
 <video class="controller-video" muted loop playsinline controls preload="metadata" poster="assets/figures/controller-case-poster.png" aria-label="Camera pans left, then right: controller arrows activate in sync with generation, cached predictions and playback below.">
 <source src="assets/figures/fig3-controller-case.mp4" type="video/mp4">
 <a href="assets/figures/fig3-controller-case.mp4">Watch the controller case animation</a>
 </video>
 <figcaption>Camera pans left → right, K = 4, q = 1. Follow the state above and the output below: reuse, replace a feasible suffix, then refill. Playback continues in both states. <span class="animation-note">Illustrative case; timing is schematic.</span></figcaption>
 </figure>
-
+<p>Commit-One predicts ahead using the latest observed condition, assuming that it will remain unchanged. If the condition stays the same, the cached predictions are reused—a cache hit. If the condition changes, the affected predictions become a cache miss and must be generated again, introducing some redundant computation.</p>
 </section>
 
 <section id="evidence">
-<div class="section-label">04 / QUALITY &amp; EFFICIENCY</div><h2>Chunk size is a design choice.</h2>
-<p>Larger chunks generally improve Wan quality within the same resolution and step budget. Suitable parallelism can also keep them efficient—there is no single best K for every setting.</p>
+<h2>4. Choosing the generation chunk</h2>
+<p>Once chunk size no longer determines interaction granularity, it can be chosen based on generation quality and computational efficiency.</p>
 <figure class="experiment-figure">
-<div class="figure-heading"><span>CHUNK-SIZE ANALYSIS / WAN1.3B</span><a href="assets/figures/chunk-size-quality-efficiency.svg" target="_blank" rel="noopener">Enlarge ↗</a></div>
-<a href="assets/figures/chunk-size-quality-efficiency.svg" target="_blank" rel="noopener" aria-label="Enlarge the chunk-size quality and efficiency plots"><img src="assets/figures/chunk-size-quality-efficiency.svg" width="1760" height="718" loading="lazy" alt="Left: Wan four-step VBench total across K=1,3,7,21 at 480p and 720p. Right: 480p H200 single-forward latency for USP1, USP2, USP4 and USP8. Larger chunks benefit from suitable parallelism."></a>
-<figcaption>Left: four-step VBench quality at two resolutions. Right: 480p single-forward time on 1/2/4/8 H200 GPUs (USP). Lines connect tested settings; they do not define a quality–latency frontier.</figcaption>
+<div class="figure-heading"><span>CHUNK-SIZE ANALYSIS / WAN1.3B</span></div>
+<img src="assets/figures/chunk-size-quality-efficiency.svg" width="1760" height="718" loading="lazy" alt="Left: Wan four-step VBench total across K=1,3,7,21 at 480p and 720p. Right: 480p H200 single-forward latency for USP1, USP2, USP4 and USP8. Larger chunks benefit from suitable parallelism.">
+<figcaption>Wan1.3B quality and H200 single-forward latency across chunk sizes.</figcaption>
 </figure>
-<div class="experiment-findings">
-<div><span class="finding-label">QUALITY · WAN 480p / 4 STEPS</span><strong>79.00 → 81.66</strong><p>VBench total, K = 1 → 3.<br>Gains are not monotonic across settings.</p></div>
-<div><span class="finding-label">PARALLELISM · WAN 480p</span><strong>77.5 ≈ 78.6 <small>ms</small></strong><p>K = 1 on one H200 vs. K = 7 on eight H200s, per forward.</p></div>
-<div><span class="finding-label">SCALING · WAN 720p / K = 21</span><strong>6432.8 → 899.7 <small>ms</small></strong><p>One H200 → eight H200s, per forward. More GPUs do not always help.</p></div>
+<p>On Wan1.3B, larger chunks generally improve VBench quality over <strong>K = 1</strong> under the same resolution and sampling budget, although the best K varies across settings.</p>
+<p>USP reduces the forward-time gap between chunk sizes. At 480p, <strong>K = 7</strong> on eight H200 GPUs takes 78.6 ms per forward, close to 77.5 ms for <strong>K = 1</strong> on one H200.</p>
+<p>We observe the same effect on LTX-2.3. The fastest <strong>K = 1</strong> configuration takes 274.0 ms on one H200, while the fastest <strong>K = 15</strong> configuration takes 420.4 ms on two H200 GPUs. Increasing K by 15× adds only 146.4 ms to a single forward.</p>
+<div class="serving-table-wrap" role="region" aria-label="LTX-2.3 H200 forward latency" tabindex="0">
+<table class="serving-table">
+<caption>LTX-2.3 H200 single-forward latency (ms), 832 × 448.</caption>
+<thead><tr><th scope="col">K</th><th scope="col">USP1</th><th scope="col">USP2</th><th scope="col">USP4</th><th scope="col">USP8</th></tr></thead>
+<tbody>
+<tr><th scope="row">1</th><td>274.0</td><td>440.5</td><td>479.6</td><td>526.1</td></tr>
+<tr><th scope="row">3</th><td>255.6</td><td>423.5</td><td>457.0</td><td>511.2</td></tr>
+<tr><th scope="row">9</th><td>426.7</td><td>417.8</td><td>456.6</td><td>502.0</td></tr>
+<tr><th scope="row">15</th><td>660.3</td><td>420.4</td><td>461.0</td><td>509.4</td></tr>
+<tr><th scope="row">45</th><td>2016.2</td><td>1158.4</td><td>634.0</td><td>507.9</td></tr>
+</tbody>
+</table>
 </div>
-<p class="caption">Tripling Wan’s current-chunk latents (K = 1 → 3) raises single-GPU forward time by 2.05× at 480p and 2.74× at 720p. These profiles exclude text encoding, VAE decoding, and the sampler loop; they are not end-to-end response times.</p>
-<details class="measurement-details"><summary>Wan quality · all resolutions and step budgets <span aria-hidden="true">+</span></summary>
-<p class="measurement-note">Separately trained K = 1/3/7/21 configurations; Toy6K training, 946 VBench prompts × five seeds, 81 frames at 16 fps. Total is the VBench aggregate; the remaining columns retain the reported component and auxiliary scores.</p>
-<div class="measurement-scroll" role="region" aria-label="Wan1.3B quality measurements" tabindex="0"><table class="measurement-table"><caption>Wan1.3B quality measurements</caption><thead><tr><th scope="col">Resolution</th><th scope="col">Steps</th><th scope="col">K</th><th scope="col">Total</th><th scope="col">Quality</th><th scope="col">Semantic</th><th scope="col">Dynamic</th><th scope="col">VisionReward</th><th scope="col">Instruction</th></tr></thead><tbody><tr><th scope="row">480p</th><td>1</td><td>1</td><td>79.11</td><td>81.80</td><td>68.34</td><td>4.00</td><td>6.50</td><td>90.00</td></tr><tr><th scope="row">480p</th><td>1</td><td>3</td><td>80.38</td><td>83.40</td><td>68.29</td><td>58.00</td><td>4.81</td><td>94.00</td></tr><tr><th scope="row">480p</th><td>1</td><td>7</td><td>81.35</td><td>83.97</td><td>70.86</td><td>48.00</td><td>5.79</td><td>100.00</td></tr><tr><th scope="row">480p</th><td>1</td><td>21</td><td>81.68</td><td>84.83</td><td>69.08</td><td>85.00</td><td>9.93</td><td>94.00</td></tr><tr class="group-start"><th scope="row">480p</th><td>2</td><td>1</td><td>80.07</td><td>82.76</td><td>69.34</td><td>14.00</td><td>9.31</td><td>98.00</td></tr><tr><th scope="row">480p</th><td>2</td><td>3</td><td>81.62</td><td>84.63</td><td>69.57</td><td>57.00</td><td>9.82</td><td>100.00</td></tr><tr><th scope="row">480p</th><td>2</td><td>7</td><td>80.84</td><td>84.06</td><td>67.94</td><td>93.00</td><td>9.29</td><td>100.00</td></tr><tr><th scope="row">480p</th><td>2</td><td>21</td><td>81.84</td><td>84.62</td><td>70.74</td><td>71.00</td><td>10.17</td><td>100.00</td></tr><tr class="group-start"><th scope="row">480p</th><td>4</td><td>1</td><td>79.00</td><td>81.38</td><td>69.50</td><td>13.00</td><td>7.65</td><td>96.00</td></tr><tr><th scope="row">480p</th><td>4</td><td>3</td><td>81.66</td><td>84.70</td><td>69.51</td><td>80.00</td><td>9.64</td><td>100.00</td></tr><tr><th scope="row">480p</th><td>4</td><td>7</td><td>81.70</td><td>84.73</td><td>69.56</td><td>78.00</td><td>10.19</td><td>98.00</td></tr><tr><th scope="row">480p</th><td>4</td><td>21</td><td>82.13</td><td>85.03</td><td>70.54</td><td>85.00</td><td>9.66</td><td>98.00</td></tr><tr class="group-start"><th scope="row">720p</th><td>1</td><td>1</td><td>78.94</td><td>81.37</td><td>69.19</td><td>4.00</td><td>5.82</td><td>92.00</td></tr><tr><th scope="row">720p</th><td>1</td><td>3</td><td>79.99</td><td>82.70</td><td>69.18</td><td>47.00</td><td>3.93</td><td>98.00</td></tr><tr><th scope="row">720p</th><td>1</td><td>7</td><td>80.78</td><td>83.05</td><td>71.67</td><td>41.00</td><td>5.23</td><td>96.00</td></tr><tr><th scope="row">720p</th><td>1</td><td>21</td><td>80.49</td><td>83.10</td><td>70.04</td><td>67.00</td><td>9.56</td><td>100.00</td></tr><tr class="group-start"><th scope="row">720p</th><td>2</td><td>1</td><td>79.86</td><td>82.40</td><td>69.70</td><td>9.00</td><td>9.43</td><td>98.00</td></tr><tr><th scope="row">720p</th><td>2</td><td>3</td><td>81.52</td><td>84.11</td><td>71.18</td><td>48.00</td><td>10.10</td><td>100.00</td></tr><tr><th scope="row">720p</th><td>2</td><td>7</td><td>80.97</td><td>83.79</td><td>69.67</td><td>84.00</td><td>9.25</td><td>94.00</td></tr><tr><th scope="row">720p</th><td>2</td><td>21</td><td>80.26</td><td>82.61</td><td>70.84</td><td>39.00</td><td>9.91</td><td>98.00</td></tr><tr class="group-start"><th scope="row">720p</th><td>4</td><td>1</td><td>78.84</td><td>81.19</td><td>69.44</td><td>22.00</td><td>7.18</td><td>92.00</td></tr><tr><th scope="row">720p</th><td>4</td><td>3</td><td>81.59</td><td>84.36</td><td>70.49</td><td>74.00</td><td>9.59</td><td>100.00</td></tr><tr><th scope="row">720p</th><td>4</td><td>7</td><td>81.86</td><td>84.62</td><td>70.83</td><td>73.00</td><td>9.77</td><td>96.00</td></tr><tr><th scope="row">720p</th><td>4</td><td>21</td><td>81.65</td><td>84.43</td><td>70.52</td><td>66.00</td><td>9.36</td><td>96.00</td></tr></tbody></table></div></details>
-<details class="measurement-details"><summary>Wan efficiency · H200 forward profiles <span aria-hidden="true">+</span></summary>
-<p class="measurement-note">Batch one, BF16, a shared reference checkpoint, and synthetic inputs with a 21-latent prefix. Slowest-rank median over 30 synchronized forwards after 10 warm-ups, including communication and output gathering. USP1/2/4/8 use 1/2/4/8 GPUs; all values are milliseconds.</p>
-<div class="measurement-scroll" role="region" aria-label="Wan H200 single-forward latency (ms)" tabindex="0"><table class="measurement-table"><caption>Wan H200 single-forward latency (ms)</caption><thead><tr><th scope="col">Resolution</th><th scope="col">K</th><th scope="col">USP1</th><th scope="col">USP2</th><th scope="col">USP4</th><th scope="col">USP8</th></tr></thead><tbody><tr><th scope="row">480p</th><td>1</td><td>77.5</td><td>63.7</td><td>65.9</td><td>72.1</td></tr><tr><th scope="row">480p</th><td>3</td><td>159.2</td><td>91.5</td><td>67.0</td><td>72.9</td></tr><tr><th scope="row">480p</th><td>7</td><td>358.3</td><td>194.7</td><td>105.2</td><td>78.6</td></tr><tr><th scope="row">480p</th><td>21</td><td>1406.2</td><td>750.0</td><td>384.1</td><td>211.0</td></tr><tr class="group-start"><th scope="row">720p</th><td>1</td><td>218.7</td><td>143.4</td><td>95.8</td><td>72.7</td></tr><tr><th scope="row">720p</th><td>3</td><td>599.6</td><td>318.4</td><td>166.5</td><td>119.4</td></tr><tr><th scope="row">720p</th><td>7</td><td>1521.4</td><td>809.2</td><td>443.8</td><td>276.4</td></tr><tr><th scope="row">720p</th><td>21</td><td>6432.8</td><td>3335.5</td><td>1737.1</td><td>899.7</td></tr></tbody></table></div></details>
-<p class="ltx-intro"><strong>LTX-2.3 shows why the choice is model-specific.</strong> Its six visual scores move differently with K, and small chunks do not benefit from more GPUs in these cached-forward profiles.</p>
-<details class="measurement-details"><summary>LTX-2.3 · visual quality and cached-forward profiles <span aria-hidden="true">+</span></summary>
-<p class="measurement-note">Internal32: 32 matched cases/seeds, 361 frames at 832 × 448 and 24 fps; Internal8K training, one training run per K. Three DiT forwards with schedule [999, 757, 522, 0] (0 is the terminal boundary). Visual scores are ×100 and have no combined total. SC/BC: subject/background consistency; Aesth.: aesthetic quality; Imaging: imaging quality; Smooth.: motion smoothness.</p>
-<div class="measurement-scroll" role="region" aria-label="LTX-2.3 visual scores (×100)" tabindex="0"><table class="measurement-table"><caption>LTX-2.3 visual scores (×100)</caption><thead><tr><th scope="col">K</th><th scope="col">SC</th><th scope="col">BC</th><th scope="col">Aesth.</th><th scope="col">Imaging</th><th scope="col">Smooth.</th><th scope="col">Dynamic</th></tr></thead><tbody><tr><th scope="row">1</th><td>87.97</td><td>94.68</td><td>52.82</td><td>73.09</td><td>99.62</td><td>31.25</td></tr><tr><th scope="row">3</th><td>88.81</td><td>94.31</td><td>52.21</td><td>65.98</td><td>99.53</td><td>46.88</td></tr><tr><th scope="row">9</th><td>89.42</td><td>93.27</td><td>50.72</td><td>68.96</td><td>99.56</td><td>34.38</td></tr><tr><th scope="row">15</th><td>84.96</td><td>92.21</td><td>51.01</td><td>65.98</td><td>99.50</td><td>78.12</td></tr><tr><th scope="row">45</th><td>88.72</td><td>93.68</td><td>52.40</td><td>68.75</td><td>99.64</td><td>40.62</td></tr></tbody></table></div><div class="measurement-scroll" role="region" aria-label="LTX-2.3 H200 cached-forward latency (ms)" tabindex="0"><table class="measurement-table"><caption>LTX-2.3 H200 cached-forward latency (ms)</caption><thead><tr><th scope="col">K</th><th scope="col">USP1</th><th scope="col">USP2</th><th scope="col">USP4</th><th scope="col">USP8</th></tr></thead><tbody><tr><th scope="row">1</th><td>274.0</td><td>440.5</td><td>479.6</td><td>526.1</td></tr><tr><th scope="row">3</th><td>255.6</td><td>423.5</td><td>457.0</td><td>511.2</td></tr><tr><th scope="row">9</th><td>426.7</td><td>417.8</td><td>456.6</td><td>502.0</td></tr><tr><th scope="row">15</th><td>660.3</td><td>420.4</td><td>461.0</td><td>509.4</td></tr><tr><th scope="row">45</th><td>2016.2</td><td>1158.4</td><td>634.0</td><td>507.9</td></tr></tbody></table></div></details>
-<p class="evidence-takeaway">Keep chunk size available as a quality–efficiency choice, while making commitment fine-grained.</p>
 </section>
 <section id="outlook" class="outlook">
-<div class="section-label">05 / A DIFFERENT ROUTE</div><h2>Make joint generation faster.<br><span class="accent">Keep interaction fine-grained.</span></h2>
-<p>Decoupling generation and commitment opens another route to responsiveness: accelerate high-quality joint generation.</p>
-<p>It also motivates exploring bidirectional teacher models for interactive streaming.</p>
+<h2>5. From a constraint to a design choice</h2>
+<p>Interactive video generation has traditionally treated chunk size as a constraint: achieving lower latency meant generating smaller chunks. Commit-One breaks this coupling. The model can generate a large chunk jointly while committing its predictions incrementally. As a result, interaction latency depends less on the video duration of a chunk and more on the computation required to generate and revise predictions as conditions change.</p>
+<p>Chunk size therefore becomes a design choice rather than a requirement for low-latency interaction. It can be selected based on generation quality and per-chunk generation time. Our experiments suggest that a larger chunk can in fact be preferable, benefiting from broader bidirectional temporal modeling and more effective parallel execution.</p>
+<p>This also opens a different path for interactive video models. <strong>Complex Self-Forcing-style post-training distillation, which can compromise the capabilities of the original model, is no longer a prerequisite for fine-grained interaction.</strong> In the demonstration above, we adapt a bidirectional H3 model with five-second generation chunks into a low-latency streaming system. Instead of forcing generation to become increasingly fine-grained, we can retain high-quality joint generation and focus on making it faster.</p>
 
 </section>
 <footer><a href="#top">Commit-One</a><span>Interactive video generation</span><a href="#top" aria-label="Back to top">↑</a></footer>

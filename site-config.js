@@ -3,7 +3,7 @@ window.COMMIT_ONE_CONFIG = {
   demo: {
     src: 'assets/demo.mp4',
     poster: 'assets/demo-poster.jpg',
-    description: 'Bidirectional model · 5-second generation chunks.',
+    description: 'Bidirectional model · 5-second generation chunks · fine-grained interactive delivery.',
     caption: ''
   }
 };
