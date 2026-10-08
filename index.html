@@ -12,10 +12,10 @@
 <script defer src="site-config.js?v=20261008-4"></script><script defer src="app.js"></script>
 </head>
 <body>
-<a class="skip" href="#constraint">Skip to content</a>
-<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">Commit–One</a><a href="#constraint">1. Chunk boundary</a><a href="#reframe">2. Revocable future</a><a href="#mechanism">3. Controller</a><a href="#evidence">4. Choosing K</a><a href="#outlook">5. Design choice</a></nav>
+<a class="skip" href="#introduction">Skip to content</a>
+<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">Commit–One</a><a href="#introduction">Introduction</a><a href="#tldr">TL;DR</a><a href="#constraint">1. Chunk boundary</a><a href="#reframe">2. Revocable future</a><a href="#mechanism">3. Controller</a><a href="#evidence">4. Choosing K</a><a href="#outlook">5. Design choice</a></nav>
 <main id="top">
-<header class="hero">
+<header id="introduction" class="hero">
 <div class="topbar"><span>RESEARCH PROJECT</span><span>INTERACTIVE VIDEO GENERATION</span></div>
 <h1>Commit–One</h1>
 <p class="paper-title">Decoupling Generation and Commitment for Interactive Video Generation</p>
@@ -34,8 +34,11 @@
 </div>
 <p id="demo-description" class="caption"></p><p class="caption" id="demo-caption"></p>
 </section>
-<p class="demo-note"><strong>TL;DR.</strong> Conventional systems generate a chunk and commit the whole chunk, making chunk size a constraint on interaction latency. Commit-One keeps the uncommitted future revocable: cached predictions are reused when the condition stays unchanged and regenerated when it changes. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </header>
+<section id="tldr" class="tldr">
+<h2>TL;DR</h2>
+<p>Conventional systems generate a chunk and commit the whole chunk, making chunk size a constraint on interaction latency. Commit-One keeps the uncommitted future revocable: cached predictions are reused when the condition stays unchanged and regenerated when it changes. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with bidirectional models without complex Self-Forcing-style post-training distillation.</p>
+</section>
 <section id="constraint">
 <h2>1. Where the chunk-size constraint comes from</h2>
 <p>An interactive system generates video into a buffer while a player consumes previously generated output. Let <strong>K</strong> denote the number of temporal latents generated together. If each latent represents <strong>δ</strong> seconds of video, one generation chunk covers</p>
