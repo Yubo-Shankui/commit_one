@@ -21,7 +21,7 @@
 <p class="paper-title">Decoupling Generation and Commitment for Interactive Video Generation</p>
 <section id="tldr" class="tldr">
 <h2>TL;DR</h2>
-<p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
+<p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a <strong>quality–efficiency choice rather than an interaction constraint</strong>, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </section>
 <div id="introduction" class="introduction">
 <p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
