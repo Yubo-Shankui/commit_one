@@ -22,15 +22,9 @@
 <section id="tldr" class="tldr">
 <h2>TL;DR</h2>
 <p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a <strong>quality–efficiency choice rather than an interaction constraint</strong>, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
-</section>
-<div id="introduction" class="introduction">
-<h2>0. Introduction</h2>
-<p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
-<p>Smaller chunks, however, also reduce the amount of video modeled jointly and may limit parallel efficiency. Commit-One asks whether fine-grained interaction must require fine-grained generation.</p>
-</div>
 <section id="demo" class="hero-demo" aria-label="Interactive demo">
 <div class="figure-heading"><span>DEMONSTRATIONS / BIDIRECTIONAL MODEL</span></div>
-<p class="demo-result"><strong>Commit-One turns bidirectional MiniMax H3, which jointly samples five seconds of video at a time, into a low-latency interactive system with approximately 1.4 seconds of end-to-end response latency—from a new user input to the first displayed video frame that responds to it.</strong></p>
+<p class="demo-result"><strong>Commit-One turns bidirectional MiniMax H3, which jointly samples five seconds of video at a time, into a low-latency interactive system with approximately 1.5 seconds of end-to-end response latency—from a new user input to the first displayed video frame that responds to it.</strong></p>
 <div class="demo-recording">
 <video id="demo-video" controls playsinline preload="metadata" src="assets/demo1_5.mp4" poster="assets/demo1_5-poster.jpg" aria-label="First recorded interactive demo using a bidirectional model with five-second generation chunks"><a href="assets/demo1_5.mp4">Watch the first interactive demo</a></video>
 </div>
@@ -38,6 +32,12 @@
 <video controls playsinline preload="metadata" src="assets/demo2_5.mp4" poster="assets/demo2_5-poster.jpg" aria-label="Second recorded interactive demo using a bidirectional model with five-second generation chunks"><a href="assets/demo2_5.mp4">Watch the second interactive demo</a></video>
 </div>
 <p id="demo-description" class="caption"></p><p class="caption" id="demo-caption"></p>
+</section>
+</section>
+<section id="introduction" class="introduction">
+<h2>0. Introduction</h2>
+<p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
+<p>Smaller chunks, however, also reduce the amount of video modeled jointly and may limit parallel efficiency. Commit-One asks whether fine-grained interaction must require fine-grained generation.</p>
 </section>
 </header>
 <section id="constraint">

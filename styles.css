@@ -18,7 +18,7 @@
 .hero-demo{padding-top:0;margin:30px 0 28px}.hero-demo .figure-heading{margin-bottom:12px}.hero-demo#demo video{max-height:none;aspect-ratio:16 / 9;object-fit:contain;border-radius:4px}.hero-demo .caption{margin:0}.hero-demo .caption:empty{display:none}
 .demo-recording{margin:0 0 24px}.demo-recording video{margin-bottom:8px}
 .demo-result{margin:0 0 22px;color:var(--text)}
-.tldr{padding-top:58px}.tldr h2{font-size:1.3rem;margin-bottom:14px}.tldr p{margin-bottom:0}
+.tldr{padding-top:58px}.tldr>h2{font-size:1.3rem;margin-bottom:14px}.tldr>p{margin-bottom:0}
 
 /* Restrained, paper-like narrative elements. */
 .hero-abstract{max-width:730px;margin:14px 0 0;font-size:1rem;line-height:1.7}
