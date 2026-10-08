@@ -37,7 +37,7 @@
 </header>
 <section id="tldr" class="tldr">
 <h2>TL;DR</h2>
-<p>Conventional systems generate a chunk and commit the whole chunk, making chunk size a constraint on interaction latency. Commit-One keeps the uncommitted future revocable: cached predictions are reused when the condition stays unchanged and regenerated when it changes. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with bidirectional models without complex Self-Forcing-style post-training distillation.</p>
+<p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </section>
 <section id="constraint">
 <h2>1. Where the chunk-size constraint comes from</h2>
