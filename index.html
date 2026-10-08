@@ -25,6 +25,7 @@
 </div>
 <section id="demo" class="hero-demo" aria-label="Interactive demo">
 <div class="figure-heading"><span>DEMONSTRATIONS / BIDIRECTIONAL MODEL</span></div>
+<p class="demo-result"><strong>Commit-One turns bidirectional MiniMax H3, which jointly samples five seconds of video at a time, into a low-latency interactive system with approximately 1.4 seconds of end-to-end response latency—from a new user input to the first displayed video frame that responds to it.</strong></p>
 <div class="demo-recording">
 <video id="demo-video" controls playsinline preload="metadata" src="assets/demo1_5.mp4" poster="assets/demo1_5-poster.jpg" aria-label="First recorded interactive demo using a bidirectional model with five-second generation chunks"><a href="assets/demo1_5.mp4">Watch the first interactive demo</a></video>
 </div>
@@ -33,7 +34,7 @@
 </div>
 <p id="demo-description" class="caption"></p><p class="caption" id="demo-caption"></p>
 </section>
-<p class="demo-note"><strong>TL;DR.</strong> Commit-One turns bidirectional MiniMax H3, which jointly samples five seconds of video at a time, into a low-latency interactive system with approximately 1.4 seconds of end-to-end response latency—from a new user input to the first displayed video frame that responds to it.</p>
+<p class="demo-note"><strong>TL;DR.</strong> Conventional systems generate a chunk and commit the whole chunk, making chunk size a constraint on interaction latency. Commit-One keeps the uncommitted future revocable: cached predictions are reused when the condition stays unchanged and regenerated when it changes. Chunk size therefore becomes a quality–efficiency choice rather than an interaction constraint, enabling low-latency streaming with bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </header>
 <section id="constraint">
 <h2>1. Where the chunk-size constraint comes from</h2>
