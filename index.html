@@ -13,7 +13,7 @@
 </head>
 <body>
 <a class="skip" href="#tldr">Skip to content</a>
-<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">Commit–One</a><a href="#tldr">TL;DR</a><a href="#introduction">Introduction</a><a href="#constraint">1. Chunk boundary</a><a href="#reframe">2. Revocable future</a><a href="#mechanism">3. Controller</a><a href="#evidence">4. Choosing K</a><a href="#outlook">5. Design choice</a></nav>
+<nav class="toc" aria-label="On this page"><a class="wordmark" href="#top">Commit–One</a><a href="#tldr">TL;DR</a><a href="#introduction">0. Introduction</a><a href="#constraint">1. Chunk boundary</a><a href="#reframe">2. Revocable future</a><a href="#mechanism">3. Controller</a><a href="#evidence">4. Choosing K</a><a href="#outlook">5. Design choice</a></nav>
 <main id="top">
 <header class="hero">
 <div class="topbar"><span>RESEARCH PROJECT</span><span>INTERACTIVE VIDEO GENERATION</span></div>
@@ -24,7 +24,7 @@
 <p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a <strong>quality–efficiency choice rather than an interaction constraint</strong>, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </section>
 <div id="introduction" class="introduction">
-<h2>Introduction</h2>
+<h2>0. Introduction</h2>
 <p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
 <p>Smaller chunks, however, also reduce the amount of video modeled jointly and may limit parallel efficiency. Commit-One asks whether fine-grained interaction must require fine-grained generation.</p>
 </div>
