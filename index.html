@@ -24,6 +24,7 @@
 <p>Small chunk sizes are commonly treated as a hard requirement for low interaction latency. Through a systematic analysis of how chunk size affects interaction latency and generation quality, Commit-One introduces an algorithm–infrastructure co-design that removes this constraint. Chunk size therefore becomes a <strong>quality–efficiency choice rather than an interaction constraint</strong>, enabling low-latency streaming with even large-chunk bidirectional models without complex Self-Forcing-style post-training distillation.</p>
 </section>
 <div id="introduction" class="introduction">
+<h2>Introduction</h2>
 <p>Interactive video generation requires newly arriving conditions to affect an ongoing stream promptly. A natural approach is to generate video autoregressively in small temporal chunks, creating frequent opportunities to incorporate a new condition.</p>
 <p>Smaller chunks, however, also reduce the amount of video modeled jointly and may limit parallel efficiency. Commit-One asks whether fine-grained interaction must require fine-grained generation.</p>
 </div>
