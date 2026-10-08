@@ -99,6 +99,7 @@ summary{padding:13px 0;color:var(--soft)}
 .serving-table tbody th{font-weight:600;color:var(--text)}
 .serving-table tbody tr:last-child>*{border-bottom:1px solid var(--line)}
 .protocol-note{font-size:.88rem;line-height:1.65;color:var(--muted)}
+.preview-note{font-weight:500;color:var(--text)}
 .outlook{padding-bottom:76px}
 footer{border-color:var(--line)}
 

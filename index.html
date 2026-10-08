@@ -8,7 +8,7 @@
 <meta property="og:title" content="Commit-One — Interactive Video Generation">
 <meta property="og:description" content="Large-chunk joint generation with fine-grained output commitment for interactive video.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121212'/%3E%3Crect x='5' y='9' width='6' height='14' rx='1' fill='%23f5ab4a'/%3E%3Cpath d='M15 9h12v14H15z' fill='none' stroke='%23f5ab4a' stroke-width='1.5' stroke-dasharray='3 2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="styles.css?v=20261003-1">
+<link rel="stylesheet" href="styles.css?v=20261008-2">
 <script defer src="site-config.js?v=20261008-2"></script><script defer src="app.js"></script>
 </head>
 <body>
@@ -112,7 +112,7 @@
 <p>Interactive video generation has traditionally treated chunk size as a constraint: achieving lower latency meant generating smaller chunks. Commit-One breaks this coupling. The model can generate a large chunk jointly while committing its predictions incrementally. As a result, interaction latency depends less on the video duration of a chunk and more on the computation required to generate and revise predictions as conditions change.</p>
 <p>Chunk size therefore becomes a design choice rather than a requirement for low-latency interaction. It can be selected based on generation quality and per-chunk generation time. Our experiments suggest that a larger chunk can in fact be preferable, benefiting from broader bidirectional temporal modeling and more effective parallel execution.</p>
 <p>This also opens a different path for interactive video models. <strong>Complex Self-Forcing-style post-training distillation, which can compromise the capabilities of the original model, is no longer a prerequisite for fine-grained interaction.</strong> In the demonstration above, we adapt a bidirectional H3 model with five-second generation chunks into a low-latency streaming system. Instead of forcing generation to become increasingly fine-grained, we can retain high-quality joint generation and focus on making it faster.</p>
-<p>This is a preview release; we are retraining the bidirectional H3 model for a longer context window and more timely responses to new prompts.</p>
+<p class="preview-note">This is an early preview. We are training a new bidirectional H3 model with a longer context window and faster responses to new prompts. <strong>Stay tuned!</strong></p>
 
 </section>
 <footer><a href="#top">Commit-One</a><a href="https://yubo-shankui.github.io/" rel="author">Contact the author ↗</a><a href="#top" aria-label="Back to top">↑</a></footer>
